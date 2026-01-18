@@ -1,0 +1,16 @@
+{
+  "name": "Modern Todo App",
+  "short_name": "TodoApp",
+  "description": "A modern todo app with recurring tasks and filters",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f1f1f1",
+  "theme_color": "#4CAF50",
+  "icons": [
+    {
+      "src": "logo.svg",
+      "sizes": "100x100",
+      "type": "image/svg+xml"
+    }
+  ]
+}
