@@ -1,0 +1,3154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Todo Manager</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#6366f1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="TodoFlow">
+    <link rel="apple-touch-icon" href="logo.png">
+    <link rel="icon" type="image/png" href="logo.png">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #10b981;
+            --secondary-dark: #0da271;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --light: #f8fafc;
+            --dark: #1e293b;
+            --gray: #64748b;
+            --gray-light: #e2e8f0;
+            --gray-dark: #475569;
+            --border-radius: 12px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --transition: all 0.3s ease;
+            --bg-color: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-color: #1e293b;
+        }
+
+        body.dark-theme {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f8fafc;
+            --gray-light: #334155;
+            --gray: #94a3b8;
+            --dark: #f8fafc;
+            --shadow: 0 4px 6px -1px rgba(0,0,0,0.5);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 24px;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            height: fit-content;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+
+        .logo {
+            cursor: default;
+        }
+
+        .logo i {
+            font-size: 28px;
+            color: var(--primary);
+        }
+
+        /* Dropdown Menu - Hidden */
+        .menu-dropdown {
+            display: none;
+        }
+
+        .menu-item {
+            display: none;
+        }
+
+        .logo h1 {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-links {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 32px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            border-radius: 10px;
+            text-decoration: none;
+            color: var(--gray-dark);
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .nav-link:hover {
+            background-color: #f1f5f9;
+        }
+
+        .nav-link.active {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .stats {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .stats h3 {
+            font-size: 16px;
+            margin-bottom: 16px;
+            opacity: 0.9;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        /* Main Content */
+        .main-content {
+            background: transparent;
+            border-radius: var(--border-radius);
+            padding: 0;
+            box-shadow: none;
+        }
+
+        /* Page Header */
+        .page-header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 40px;
+            border-radius: var(--border-radius);
+            margin-bottom: 32px;
+            box-shadow: var(--shadow);
+        }
+
+        .page-header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin: 0 0 12px 0;
+        }
+
+        .page-header p {
+            font-size: 16px;
+            opacity: 0.95;
+            margin: 0;
+        }
+
+        /* Dashboard Container - Grid Layout */
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        .dashboard-section,
+        .addtodo-section,
+        .existing-todos-section,
+        .history-section {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            box-shadow: var(--shadow);
+            display: none !important;
+            height: 80vh;
+            overflow-y: auto;
+        }
+
+        .dashboard-section {
+            border-top: 4px solid var(--primary);
+        }
+
+        .addtodo-section {
+            border-top: 4px solid var(--secondary);
+        }
+
+        .existing-todos-section {
+            border-top: 4px solid var(--warning);
+        }
+
+        .history-section {
+            border-top: 4px solid var(--danger);
+        }
+
+        .dashboard-section.active,
+        .addtodo-section.active,
+        .existing-todos-section.active,
+        .history-section.active {
+            display: block !important;
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--gray-light);
+        }
+
+        .content-header h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .content-header h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .date-display {
+            font-size: 16px;
+            color: var(--gray);
+            font-weight: 500;
+        }
+
+        /* Dashboard Actions */
+        .dashboard-actions {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            border-radius: 10px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .btn-success {
+            background-color: var(--secondary);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: var(--secondary-dark);
+        }
+
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #dc2626;
+        }
+
+        .btn-outline {
+            background-color: var(--card-bg);
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        .btn-outline:hover {
+            background-color: #f1f5ff;
+        }
+
+        /* Todo List */
+        .todo-list {
+            margin-top: 24px;
+        }
+
+        .todo-list-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .bulk-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .select-all {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            color: var(--gray-dark);
+        }
+
+        .checkbox {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--primary);
+            cursor: pointer;
+        }
+
+        .todo-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            background-color: var(--card-bg);
+            border: 1px solid var(--gray-light);
+            margin-bottom: 12px;
+            transition: var(--transition);
+        }
+
+        .todo-item:hover {
+            box-shadow: var(--shadow);
+            border-color: var(--primary);
+        }
+
+        .todo-item.selected {
+            background-color: #f0f9ff;
+            border-color: var(--primary);
+        }
+
+        .todo-item.completed {
+            opacity: 0.7;
+            background-color: #f8fafc;
+        }
+
+        .todo-item.completed .todo-title {
+            text-decoration: line-through;
+            color: var(--gray);
+        }
+
+        .todo-content {
+            flex: 1;
+        }
+
+        .todo-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--dark);
+        }
+
+        .todo-meta {
+            display: flex;
+            gap: 16px;
+            font-size: 14px;
+            color: var(--gray);
+        }
+
+        .todo-time {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+        }
+
+        .priority {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .priority-high {
+            background-color: #fee2e2;
+            color: var(--danger);
+        }
+
+        .priority-medium {
+            background-color: #fef3c7;
+            color: var(--warning);
+        }
+
+        .priority-low {
+            background-color: #d1fae5;
+            color: var(--secondary);
+        }
+
+        .recurring-badge {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background-color: #e0e7ff;
+            color: var(--primary);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .recurring-badge:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        /* Add Todo Section */
+        .form-container {
+            background-color: #f8fafc;
+            border-radius: var(--border-radius);
+            padding: 24px;
+            margin-top: 32px;
+            border: 1px solid var(--gray-light);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid var(--gray-light);
+            border-radius: 10px;
+            font-size: 16px;
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        /* Existing Todos Section */
+        .existing-todos {
+            margin-top: 40px;
+        }
+
+        .existing-todos-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .filter-options {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 10px 18px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--gray-light);
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .filter-btn.active {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* History Section */
+        .history-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        /* Empty States */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--gray);
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: var(--dark);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            width: 95%;
+            max-width: 800px;
+            padding: 32px;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--gray);
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 32px;
+        }
+
+        /* Responsive */
+        /* Floating Action Button */
+        .fab {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background-color: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            box-shadow: var(--shadow-lg);
+            cursor: pointer;
+            z-index: 900;
+            transition: transform 0.2s, background-color 0.2s;
+            border: none;
+        }
+
+        .fab:hover {
+            transform: scale(1.1);
+            background-color: var(--primary-dark);
+        }
+
+        @media (max-width: 1400px) {
+            .dashboard-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .mobile-header {
+            display: none;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            margin-bottom: 24px;
+            box-shadow: var(--shadow);
+        }
+
+        .mobile-menu-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: var(--primary);
+            cursor: pointer;
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .mobile-header {
+                display: flex;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                z-index: 999;
+                border-radius: 0;
+                margin-bottom: 0;
+            }
+
+            .main-content {
+                padding-top: 80px;
+            }
+
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 280px;
+                height: 100vh;
+                z-index: 1000;
+                border-radius: 0;
+                overflow-y: auto;
+                transform: translateX(-100%);
+            }
+
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .content-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            .dashboard-actions {
+                flex-direction: column;
+            }
+
+            .dashboard-actions .action-btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .todo-item {
+                flex-direction: column;
+                align-items: flex-start !important;
+                gap: 12px;
+            }
+
+            .bulk-actions {
+                flex-wrap: wrap;
+                width: 100%;
+                gap: 10px;
+                justify-content: flex-start !important;
+            }
+
+            .bulk-actions > div {
+                flex-wrap: wrap;
+                width: 100%;
+            }
+
+            .bulk-actions .action-btn {
+                flex: 1;
+                min-width: 140px;
+                text-align: center;
+                white-space: nowrap;
+            }
+
+            .todo-item-actions {
+                flex-wrap: wrap;
+                width: 100%;
+                justify-content: flex-start;
+            }
+
+            .todo-item-actions .action-btn {
+                flex: 1 !important;
+                min-width: calc(33% - 8px) !important;
+                width: auto !important;
+                white-space: nowrap;
+                padding: 10px !important;
+                font-size: 13px !important;
+                justify-content: center !important;
+            }
+        }
+
+        /* Link Dropdown Styles */
+        .link-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .link-dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            bottom: 100%;
+            background-color: var(--card-bg);
+            min-width: 200px;
+            box-shadow: var(--shadow-lg);
+            border-radius: 12px;
+            z-index: 1000;
+            margin-bottom: 10px;
+            border: 1px solid var(--gray-light);
+            overflow: hidden;
+            animation: slideUpFade 0.2s ease-out;
+        }
+
+        @keyframes slideUpFade {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .link-dropdown-content.show {
+            display: block;
+        }
+
+        .link-dropdown-item {
+            padding: 12px 16px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--dark);
+            transition: var(--transition);
+            font-size: 14px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .link-dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .link-dropdown-item:hover {
+            background-color: #f8fafc;
+            color: var(--primary);
+        }
+
+        /* Multiple Links Form Styles */
+        .links-input-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .remove-link-btn {
+            background-color: #fee2e2 !important;
+            color: #ef4444 !important;
+            border: none;
+            border-radius: 8px;
+            width: 40px;
+            height: 48px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            padding: 0;
+        }
+
+        .remove-link-btn:hover {
+            background-color: #fecaca !important;
+        }
+
+        .add-link-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary);
+            background: #eef2ff;
+            border: 1px dashed var(--primary);
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            width: 100%;
+            justify-content: center;
+            transition: var(--transition);
+            margin-top: 8px;
+        }
+
+        .add-link-btn:hover {
+            background: #e0e7ff;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">
+                <img src="logo.png" alt="TodoFlow Logo"
+                    style="width: 32px; height: 32px; object-fit: contain; border-radius: 6px;">
+                <h1>TodoFlow</h1>
+            </div>
+
+            <div class="nav-links">
+                <a href="#" class="nav-link active" data-tab="dashboard">
+                    <i class="fas fa-tachometer-alt"></i>
+                    Dashboard
+                </a>
+                <a href="#" class="nav-link" data-tab="add-todo">
+                    <i class="fas fa-list-ul"></i>
+                    My Todos
+                </a>
+                <a href="#" class="nav-link" data-tab="history">
+                    <i class="fas fa-history"></i>
+                    History
+                </a>
+                <a href="#" class="nav-link" data-tab="settings">
+                    <i class="fas fa-cog"></i>
+                    Settings
+                </a>
+
+                <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--gray-light);">
+                    <button class="nav-link" id="importTodosBtn"
+                        style="border: none; background: none; width: 100%; cursor: pointer; text-align: left;">
+                        <i class="fas fa-file-import"></i>
+                        Import Todos
+                    </button>
+                    <input type="file" id="csvImportInput" accept=".csv" style="display: none;">
+                </div>
+            </div>
+
+            <div class="stats">
+                <h3>Today's Overview</h3>
+                <div class="stat-item">
+                    <span>Total Todos</span>
+                    <span class="stat-value" id="todayTotal">0</span>
+                </div>
+                <div class="stat-item">
+                    <span>Completed</span>
+                    <span class="stat-value" id="todayCompleted">0</span>
+                </div>
+                <div class="stat-item">
+                    <span>Pending</span>
+                    <span class="stat-value" id="todayPending">0</span>
+                </div>
+            </div>
+
+            <div class="notification-permission" id="notificationPermissionSection"
+                style="background: #fef3c7; padding: 12px; border-radius: 8px; text-align: center; margin-top: 20px;">
+                <p id="notificationText" style="font-size: 14px; margin-bottom: 8px;">Enable notifications for reminders
+                </p>
+                <button class="action-btn btn-primary" id="enableNotifications"
+                    style="width: 100%; padding: 8px;">Enable</button>
+            </div>
+
+            <div class="install-app-section" id="installAppSection"
+                style="display: none; background: #e0e7ff; padding: 12px; border-radius: 8px; text-align: center; margin-top: 12px;">
+                <p style="font-size: 14px; margin-bottom: 8px;">Install app on PC or Android</p>
+                <button class="action-btn btn-primary" id="installAppBtn" style="width: 100%; padding: 8px;">
+                    <i class="fas fa-download" style="margin-right: 8px;"></i>Install
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Mobile Header -->
+            <div class="mobile-header">
+                <button class="mobile-menu-btn" id="mobileMenuBtn">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="mobile-logo-text" style="font-weight: 700; font-size: 20px; color: var(--primary);">TodoFlow</div>
+            </div>
+            <!-- Stats Visual Header -->
+            <div class="page-header"
+                style="background: var(--card-bg); padding: 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px; color: var(--dark);">
+                <div class="stat-card"
+                    style="background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid var(--gray-light); display: flex; flex-direction: column; gap: 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-weight: 700; color: var(--gray-dark);"><i class="fas fa-tasks"
+                                style="color: var(--primary);"></i> Completion Rate</span>
+                        <span id="headerProgressPct" style="font-weight: 800; color: var(--primary);">0%</span>
+                    </div>
+                    <div style="width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden;">
+                        <div id="headerProgressBar"
+                            style="width: 0%; height: 100%; background: var(--primary); transition: width 0.5s ease-out;">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card"
+                    style="background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid var(--gray-light); display: flex; align-items: center; gap: 16px;">
+                    <div
+                        style="width: 48px; height: 48px; background: #dcfce7; color: #16a34a; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px;">
+                        <i class="fas fa-check-double"></i>
+                    </div>
+                    <div>
+                        <div style="font-size: 14px; font-weight: 600; color: var(--gray);">Done Today</div>
+                        <div id="headerDoneCount" style="font-size: 24px; font-weight: 800; color: var(--dark);">0</div>
+                    </div>
+                </div>
+
+                <div class="stat-card"
+                    style="background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid var(--gray-light); display: flex; align-items: center; gap: 16px;">
+                    <div
+                        style="width: 48px; height: 48px; background: #fee2e2; color: #dc2626; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px;">
+                        <i class="fas fa-hourglass-half"></i>
+                    </div>
+                    <div>
+                        <div style="font-size: 14px; font-weight: 600; color: var(--gray);">Left to Do</div>
+                        <div id="headerPendingCount" style="font-size: 24px; font-weight: 800; color: var(--dark);">0
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Full Page Layout with All Sections -->
+            <div class="dashboard-container">
+                <!-- Dashboard Section -->
+                <div class="dashboard-section active">
+                    <div class="content-header">
+                        <div>
+                            <h2>Today's Dashboard</h2>
+                            <div class="date-display" id="currentDate"></div>
+                        </div>
+                        <div class="dashboard-actions">
+                            <button class="action-btn btn-primary" id="openAddTodoBtn">
+                                <i class="fas fa-plus"></i>
+                                New Todo
+                            </button>
+                            <button class="action-btn btn-primary" id="completeSelected">
+                                <i class="fas fa-check-circle"></i>
+                                Complete Selected
+                            </button>
+                            <button class="action-btn btn-danger" id="deleteSelected">
+                                <i class="fas fa-trash-alt"></i>
+                                Delete Selected
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="todo-list">
+                        <div class="todo-list-header">
+                            <h3>Today's Todos</h3>
+                            <div class="bulk-actions">
+                                <label class="select-all">
+                                    <input type="checkbox" class="checkbox" id="selectAllToday">
+                                    Select All
+                                </label>
+                            </div>
+                        </div>
+
+                        <div id="todayTodoList">
+                            <!-- Today's todos will be loaded here -->
+                        </div>
+                    </div>
+
+                    <div class="todo-list" style="margin-top: 40px; border-top: 2px solid #fee2e2; padding-top: 24px;">
+                        <div class="todo-list-header">
+                            <h3 style="color: #dc2626;"><i class="fas fa-history"></i> Uncomplete (Passed) Todos</h3>
+                        </div>
+                        <div id="overdueTodoList">
+                            <!-- Overdue todos will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="addtodo-section">
+                    <div class="content-header">
+                        <h2>My Todos</h2>
+                    </div>
+
+                    <div class="existing-todos-header"
+                        style="flex-direction: column; align-items: flex-start; gap: 20px;">
+
+                        <!-- Advanced Filter Toolbar -->
+                        <div class="filter-toolbar"
+                            style="display: flex; gap: 20px; flex-wrap: wrap; width: 100%; background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid var(--gray-light);">
+                            <div class="filter-group" style="flex: 1; min-width: 250px;">
+                                <label
+                                    style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 8px; color: var(--gray-dark);"><i
+                                        class="fas fa-calendar-alt"></i> Time Range</label>
+                                <div class="filter-options" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                    <button class="filter-btn active" data-filter="all">All</button>
+                                    <button class="filter-btn" data-filter="today">Today</button>
+                                    <button class="filter-btn" data-filter="week">Week</button>
+                                    <button class="filter-btn" data-filter="month">Month</button>
+                                    <button class="filter-btn" data-filter="year">Year</button>
+                                </div>
+                            </div>
+
+                            <div class="filter-group">
+                                <label
+                                    style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 8px; color: var(--gray-dark); text-wrap: nowrap;"><i
+                                        class="fas fa-search"></i> Selection Date</label>
+                                <input type="date" id="filterDate" class="form-control"
+                                    style="padding: 8px 12px; height: 40px; border-radius: 8px;">
+                            </div>
+
+                            <div class="filter-group">
+                                <label
+                                    style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 8px; color: var(--gray-dark); text-wrap: nowrap;"><i
+                                        class="fas fa-sort"></i> Sort By</label>
+                                <select id="todoSort" class="form-control"
+                                    style="padding: 8px 12px; height: 40px; width: 160px; border-radius: 8px;">
+                                    <option value="newest">Newest First</option>
+                                    <option value="oldest">Oldest First</option>
+                                </select>
+                            </div>
+
+                            <div class="filter-group" style="width: 100%;">
+                                <label
+                                    style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 8px; color: var(--gray-dark); text-wrap: nowrap;"><i
+                                        class="fas fa-filter"></i> Filter by Days</label>
+                                <div class="day-filter-options" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                    <label
+                                        style="display: flex; align-items: center; gap: 5px; cursor: pointer; background: var(--card-bg); padding: 6px 12px; border-radius: 6px; border: 1px solid var(--gray-light); font-size: 13px;">
+                                        <input type="checkbox" class="day-filter" value="0"> Sun
+                                    </label>
+                                    <label
+                                        style="display: flex; align-items: center; gap: 5px; cursor: pointer; background: var(--card-bg); padding: 6px 12px; border-radius: 6px; border: 1px solid var(--gray-light); font-size: 13px;">
+                                        <input type="checkbox" class="day-filter" value="1"> Mon
+                                    </label>
+                                    <label
+                                        style="display: flex; align-items: center; gap: 5px; cursor: pointer; background: var(--card-bg); padding: 6px 12px; border-radius: 6px; border: 1px solid var(--gray-light); font-size: 13px;">
+                                        <input type="checkbox" class="day-filter" value="2"> Tue
+                                    </label>
+                                    <label
+                                        style="display: flex; align-items: center; gap: 5px; cursor: pointer; background: var(--card-bg); padding: 6px 12px; border-radius: 6px; border: 1px solid var(--gray-light); font-size: 13px;">
+                                        <input type="checkbox" class="day-filter" value="3"> Wed
+                                    </label>
+                                    <label
+                                        style="display: flex; align-items: center; gap: 5px; cursor: pointer; background: var(--card-bg); padding: 6px 12px; border-radius: 6px; border: 1px solid var(--gray-light); font-size: 13px;">
+                                        <input type="checkbox" class="day-filter" value="4"> Thu
+                                    </label>
+                                    <label
+                                        style="display: flex; align-items: center; gap: 5px; cursor: pointer; background: var(--card-bg); padding: 6px 12px; border-radius: 6px; border: 1px solid var(--gray-light); font-size: 13px;">
+                                        <input type="checkbox" class="day-filter" value="5"> Fri
+                                    </label>
+                                    <label
+                                        style="display: flex; align-items: center; gap: 5px; cursor: pointer; background: var(--card-bg); padding: 6px 12px; border-radius: 6px; border: 1px solid var(--gray-light); font-size: 13px;">
+                                        <input type="checkbox" class="day-filter" value="6"> Sat
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Search Bar -->
+                        <div class="search-container" style="width: 100%; position: relative;">
+                            <i class="fas fa-search"
+                                style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--gray);"></i>
+                            <input type="text" id="todoSearch" class="form-control"
+                                placeholder="Search todos by title or description..."
+                                style="padding: 12px 12px 12px 45px; border-radius: 10px;">
+                        </div>
+
+                        <!-- Bulk Actions -->
+                        <div class="bulk-actions"
+                            style="width: 100%; display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); padding: 12px; border-radius: 8px; border: 1px dashed var(--gray);">
+                            <label class="select-all" style="cursor: pointer;">
+                                <input type="checkbox" class="checkbox" id="selectAllExisting">
+                                <span style="font-weight: 600;">Select All</span>
+                            </label>
+                            <div style="display: flex; gap: 10px;">
+                                <button class="action-btn btn-success" id="exportTodos"
+                                    style="padding: 10px 20px; font-size: 14px;">
+                                    <i class="fas fa-file-export"></i>
+                                    Export Todos
+                                </button>
+                                <button class="action-btn btn-danger" id="deleteSelectedExisting"
+                                    style="padding: 10px 20px; font-size: 14px;">
+                                    <i class="fas fa-trash-alt"></i>
+                                    Delete Selected
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="existingTodosList" style="margin-top: 24px;">
+                        <!-- Existing todos will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Completed History Section -->
+                <div class="history-section">
+                    <div class="content-header">
+                        <h2>Completed History</h2>
+                    </div>
+
+                    <div class="history-actions" style="display: flex; flex-direction: column; gap: 20px;">
+                        <!-- Advanced Filter Toolbar for History -->
+                        <div class="filter-toolbar"
+                            style="display: flex; gap: 20px; flex-wrap: wrap; width: 100%; background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid var(--gray-light);">
+                            <div class="filter-group" style="flex: 1; min-width: 250px;">
+                                <label
+                                    style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 8px; color: var(--gray-dark);"><i
+                                        class="fas fa-calendar-alt"></i> Time Range</label>
+                                <div class="filter-options" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                    <button class="filter-btn active" data-history-filter="all">All</button>
+                                    <button class="filter-btn" data-history-filter="today">Today</button>
+                                    <button class="filter-btn" data-history-filter="week">Week</button>
+                                    <button class="filter-btn" data-history-filter="month">Month</button>
+                                    <button class="filter-btn" data-history-filter="year">Year</button>
+                                </div>
+                            </div>
+
+                            <div class="filter-group">
+                                <label
+                                    style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 8px; color: var(--gray-dark); text-wrap: nowrap;"><i
+                                        class="fas fa-search"></i> Selection Date</label>
+                                <input type="date" id="historyFilterDate" class="form-control"
+                                    style="padding: 8px 12px; height: 40px; border-radius: 8px;">
+                            </div>
+
+                            <div class="filter-group">
+                                <label
+                                    style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 8px; color: var(--gray-dark); text-wrap: nowrap;"><i
+                                        class="fas fa-sort"></i> Sort By</label>
+                                <select id="historyTodoSort" class="form-control"
+                                    style="padding: 8px 12px; height: 40px; width: 160px; border-radius: 8px;">
+                                    <option value="newest">Newest First</option>
+                                    <option value="oldest">Oldest First</option>
+                                </select>
+                            </div>
+
+                            <div class="filter-group" style="width: 100%;">
+                                <label
+                                    style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 8px; color: var(--gray-dark); text-wrap: nowrap;"><i
+                                        class="fas fa-filter"></i> Filter by Days</label>
+                                <div class="day-filter-options" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                    <label
+                                        style="display: flex; align-items: center; gap: 5px; cursor: pointer; background: var(--card-bg); padding: 6px 12px; border-radius: 6px; border: 1px solid var(--gray-light); font-size: 13px;">
+                                        <input type="checkbox" class="history-day-filter" value="0"> Sun
+                                    </label>
+                                    <label
+                                        style="display: flex; align-items: center; gap: 5px; cursor: pointer; background: var(--card-bg); padding: 6px 12px; border-radius: 6px; border: 1px solid var(--gray-light); font-size: 13px;">
+                                        <input type="checkbox" class="history-day-filter" value="1"> Mon
+                                    </label>
+                                    <label
+                                        style="display: flex; align-items: center; gap: 5px; cursor: pointer; background: var(--card-bg); padding: 6px 12px; border-radius: 6px; border: 1px solid var(--gray-light); font-size: 13px;">
+                                        <input type="checkbox" class="history-day-filter" value="2"> Tue
+                                    </label>
+                                    <label
+                                        style="display: flex; align-items: center; gap: 5px; cursor: pointer; background: var(--card-bg); padding: 6px 12px; border-radius: 6px; border: 1px solid var(--gray-light); font-size: 13px;">
+                                        <input type="checkbox" class="history-day-filter" value="3"> Wed
+                                    </label>
+                                    <label
+                                        style="display: flex; align-items: center; gap: 5px; cursor: pointer; background: var(--card-bg); padding: 6px 12px; border-radius: 6px; border: 1px solid var(--gray-light); font-size: 13px;">
+                                        <input type="checkbox" class="history-day-filter" value="4"> Thu
+                                    </label>
+                                    <label
+                                        style="display: flex; align-items: center; gap: 5px; cursor: pointer; background: var(--card-bg); padding: 6px 12px; border-radius: 6px; border: 1px solid var(--gray-light); font-size: 13px;">
+                                        <input type="checkbox" class="history-day-filter" value="5"> Fri
+                                    </label>
+                                    <label
+                                        style="display: flex; align-items: center; gap: 5px; cursor: pointer; background: var(--card-bg); padding: 6px 12px; border-radius: 6px; border: 1px solid var(--gray-light); font-size: 13px;">
+                                        <input type="checkbox" class="history-day-filter" value="6"> Sat
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- History Search Bar -->
+                        <div class="search-container" style="width: 100%; position: relative;">
+                            <i class="fas fa-search"
+                                style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--gray);"></i>
+                            <input type="text" id="historyTodoSearch" class="form-control"
+                                placeholder="Search completed todos..."
+                                style="padding: 12px 12px 12px 45px; border-radius: 10px;">
+                        </div>
+
+                        <!-- History Bulk Actions -->
+                        <div class="bulk-actions"
+                            style="width: 100%; display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); padding: 12px; border-radius: 8px; border: 1px dashed var(--gray);">
+                            <label class="select-all" style="cursor: pointer;">
+                                <input type="checkbox" class="checkbox" id="selectAllHistory">
+                                <span style="font-weight: 600;">Select All</span>
+                            </label>
+                            <div style="display: flex; gap: 10px;">
+                                <button class="action-btn btn-success" id="exportHistory"
+                                    style="padding: 10px 20px; font-size: 14px;">
+                                    <i class="fas fa-file-export"></i>
+                                    Export History
+                                </button>
+                                <button class="action-btn btn-danger" id="deleteSelectedHistory"
+                                    style="padding: 10px 20px; font-size: 14px;">
+                                    <i class="fas fa-trash-alt"></i>
+                                    Delete Selected
+                                </button>
+                                <button class="action-btn btn-primary" id="reassignSelected"
+                                    style="padding: 10px 20px; font-size: 14px;">
+                                    <i class="fas fa-redo"></i>
+                                    Reassign Selected
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="historyList">
+                        <!-- History items will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Settings Section -->
+                <div class="settings-section">
+                    <div class="content-header">
+                        <h2>Settings</h2>
+                    </div>
+                    <div class="settings-content" style="margin-top: 24px;">
+                        <div class="setting-item" style="display: flex; justify-content: space-between; align-items: center; padding: 20px; border: 1px solid var(--gray-light); border-radius: 12px; margin-bottom: 16px;">
+                            <div>
+                                <h3 style="font-size: 16px; margin-bottom: 4px; color: var(--dark);">Dark Theme</h3>
+                                <p style="font-size: 14px; color: var(--gray);">Switch between light and dark mode</p>
+                            </div>
+                            <label class="theme-switch" style="position: relative; display: inline-block; width: 60px; height: 34px;">
+                                <input type="checkbox" id="darkModeToggle" style="opacity: 0; width: 0; height: 0;">
+                                <span class="theme-slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--gray-light); transition: .4s; border-radius: 34px;"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Todo Modal -->
+    <div class="modal" id="todoModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">Add New Todo</h3>
+                <button class="modal-close" id="closeTodoModal">&times;</button>
+            </div>
+            <form id="todoForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="todoTitle">Title *</label>
+                        <input type="text" id="todoTitle" class="form-control" placeholder="What do you need to do?"
+                            required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="todoDescription">Description</label>
+                        <input type="text" id="todoDescription" class="form-control"
+                            placeholder="Add details (optional)">
+                    </div>
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label>Action Links</label>
+                        <div id="linksContainer">
+                            <!-- Link inputs will be added here -->
+                        </div>
+                        <button type="button" class="add-link-btn" id="addLinkBtn">
+                            <i class="fas fa-plus"></i> Add Another Link
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="todoDate">Date *</label>
+                        <input type="date" id="todoDate" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="todoTime">Time *</label>
+                        <input type="time" id="todoTime" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="todoPriority">Priority</label>
+                        <select id="todoPriority" class="form-control">
+                            <option value="low">Low</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="recurringType">Recurring Type</label>
+                        <select id="recurringType" class="form-control">
+                            <option value="none">None (One-time)</option>
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                            <option value="weekdays">Weekdays (Mon-Fri)</option>
+                            <option value="multiple">Multiple Days (Custom)</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="multipleDaysContainer" style="display: none; grid-column: 1 / -1;">
+                        <label>Select Days *</label>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px;">
+                            <label
+                                style="display: flex; align-items: center; gap: 6px; padding: 8px 12px; background: var(--card-bg); border: 1px solid var(--gray-light); border-radius: 8px; cursor: pointer; font-size: 14px;">
+                                <input type="checkbox" name="recurringDays" value="0" class="checkbox"> Sun
+                            </label>
+                            <label
+                                style="display: flex; align-items: center; gap: 6px; padding: 8px 12px; background: var(--card-bg); border: 1px solid var(--gray-light); border-radius: 8px; cursor: pointer; font-size: 14px;">
+                                <input type="checkbox" name="recurringDays" value="1" class="checkbox"> Mon
+                            </label>
+                            <label
+                                style="display: flex; align-items: center; gap: 6px; padding: 8px 12px; background: var(--card-bg); border: 1px solid var(--gray-light); border-radius: 8px; cursor: pointer; font-size: 14px;">
+                                <input type="checkbox" name="recurringDays" value="2" class="checkbox"> Tue
+                            </label>
+                            <label
+                                style="display: flex; align-items: center; gap: 6px; padding: 8px 12px; background: var(--card-bg); border: 1px solid var(--gray-light); border-radius: 8px; cursor: pointer; font-size: 14px;">
+                                <input type="checkbox" name="recurringDays" value="3" class="checkbox"> Wed
+                            </label>
+                            <label
+                                style="display: flex; align-items: center; gap: 6px; padding: 8px 12px; background: var(--card-bg); border: 1px solid var(--gray-light); border-radius: 8px; cursor: pointer; font-size: 14px;">
+                                <input type="checkbox" name="recurringDays" value="4" class="checkbox"> Thu
+                            </label>
+                            <label
+                                style="display: flex; align-items: center; gap: 6px; padding: 8px 12px; background: var(--card-bg); border: 1px solid var(--gray-light); border-radius: 8px; cursor: pointer; font-size: 14px;">
+                                <input type="checkbox" name="recurringDays" value="5" class="checkbox"> Fri
+                            </label>
+                            <label
+                                style="display: flex; align-items: center; gap: 6px; padding: 8px 12px; background: var(--card-bg); border: 1px solid var(--gray-light); border-radius: 8px; cursor: pointer; font-size: 14px;">
+                                <input type="checkbox" name="recurringDays" value="6" class="checkbox"> Sat
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row" style="margin-top: 24px;">
+                    <div class="form-group" id="recurringEndContainer" style="display: none;">
+                        <label for="recurringEndDate">End Date (Optional)</label>
+                        <input type="date" id="recurringEndDate" class="form-control">
+                    </div>
+                </div>
+
+                <div class="modal-footer" style="display: flex; gap: 12px; width: 100%; margin-top: 24px;">
+                    <button type="button" class="action-btn btn-outline" id="closeTodoForm"
+                        style="flex: 1; padding: 12px;">
+                        Cancel
+                    </button>
+                    <button type="submit" class="action-btn btn-primary" id="submitTodoBtn"
+                        style="flex: 2; padding: 12px;">
+                        <i class="fas fa-save"></i>
+                        Save Todo
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Floating Action Button -->
+    <button class="fab" id="fabAddTodo" title="Add New Todo">
+        <i class="fas fa-plus"></i>
+    </button>
+
+    <!-- Reassign Modal -->
+    <div class="modal" id="reassignModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Reassign Todos</h3>
+                <button class="modal-close" id="closeModal">&times;</button>
+            </div>
+            <div class="form-group">
+                <label for="reassignDate">New Date *</label>
+                <input type="date" id="reassignDate" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="reassignTime">New Time *</label>
+                <input type="time" id="reassignTime" class="form-control" required>
+            </div>
+            <div class="modal-footer">
+                <button class="action-btn btn-outline" id="cancelReassign">Cancel</button>
+                <button class="action-btn btn-primary" id="confirmReassign">Reassign Selected</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // App State
+        let todos = JSON.parse(localStorage.getItem('todos')) || [];
+        let completedHistory = JSON.parse(localStorage.getItem('completedHistory')) || [];
+        let selectedTodayIds = [];
+        let selectedExistingIds = [];
+        let selectedHistoryIds = [];
+        let editingTodoId = null;
+
+        const currentDateEl = document.getElementById('currentDate');
+        const todayTodoList = document.getElementById('todayTodoList');
+        const existingTodosList = document.getElementById('existingTodosList');
+        const historyList = document.getElementById('historyList');
+        const todoForm = document.getElementById('todoForm');
+        const linksContainer = document.getElementById('linksContainer');
+        const addLinkBtn = document.getElementById('addLinkBtn');
+        const todayTotalEl = document.getElementById('todayTotal');
+        const todayCompletedEl = document.getElementById('todayCompleted');
+        const todayPendingEl = document.getElementById('todayPending');
+        const navLinks = document.querySelectorAll('.nav-link');
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        const historyFilterBtns = document.querySelectorAll('[data-history-filter]');
+        const notificationPermissionEl = document.querySelector('.notification-permission');
+        const enableNotificationsBtn = document.getElementById('enableNotifications');
+        const recurringTypeSelect = document.getElementById('recurringType');
+        const recurringEndContainer = document.getElementById('recurringEndContainer');
+        const multipleDaysContainer = document.getElementById('multipleDaysContainer');
+        const todoDateInput = document.getElementById('todoDate');
+        const selectAllToday = document.getElementById('selectAllToday');
+        const selectAllExisting = document.getElementById('selectAllExisting');
+        const selectAllHistory = document.getElementById('selectAllHistory');
+        const completeSelectedBtn = document.getElementById('completeSelected');
+        const deleteSelectedBtn = document.getElementById('deleteSelected');
+        const deleteSelectedExistingBtn = document.getElementById('deleteSelectedExisting');
+        const deleteSelectedHistoryBtn = document.getElementById('deleteSelectedHistory');
+        const reassignSelectedBtn = document.getElementById('reassignSelected');
+        const reassignModal = document.getElementById('reassignModal');
+        const closeModalBtn = document.getElementById('closeModal');
+        const cancelReassignBtn = document.getElementById('cancelReassign');
+        const confirmReassignBtn = document.getElementById('confirmReassign');
+        const reassignDateInput = document.getElementById('reassignDate');
+        const reassignTimeInput = document.getElementById('reassignTime');
+
+        // New Modal Elements
+        const todoModal = document.getElementById('todoModal');
+        const openAddTodoBtn = document.getElementById('openAddTodoBtn');
+        const fabAddTodo = document.getElementById('fabAddTodo');
+        const closeTodoModal = document.getElementById('closeTodoModal');
+        const closeTodoForm = document.getElementById('closeTodoForm');
+        const modalTitle = document.getElementById('modalTitle');
+
+        // Initialize App
+        document.addEventListener('DOMContentLoaded', function () {
+            // Theme Initialization
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const currentTheme = localStorage.getItem('theme') || 'light';
+            if (currentTheme === 'dark') {
+                document.body.classList.add('dark-theme');
+                if (darkModeToggle) darkModeToggle.checked = true;
+            }
+
+            if (darkModeToggle) {
+                darkModeToggle.addEventListener('change', function() {
+                    if (this.checked) {
+                        document.body.classList.add('dark-theme');
+                        localStorage.setItem('theme', 'dark');
+                    } else {
+                        document.body.classList.remove('dark-theme');
+                        localStorage.setItem('theme', 'light');
+                    }
+                });
+            }
+
+            // Mobile Menu Toggle
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            const sidebar = document.querySelector('.sidebar');
+            if (mobileMenuBtn && sidebar) {
+                mobileMenuBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    sidebar.classList.toggle('mobile-open');
+                });
+
+                // Close sidebar when clicking outside of it
+                document.addEventListener('click', function(e) {
+                    if (sidebar.classList.contains('mobile-open')) {
+                        if (!sidebar.contains(e.target) && !mobileMenuBtn.contains(e.target)) {
+                            sidebar.classList.remove('mobile-open');
+                        }
+                    }
+                });
+            }
+
+            // Register Service Worker for PWA
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then(reg => console.log('Service Worker Registered'))
+                    .catch(err => console.log('Service Worker Failed to Register', err));
+            }
+
+            // PWA Installation Logic
+            let deferredPrompt;
+            const installAppSection = document.getElementById('installAppSection');
+            const installAppBtn = document.getElementById('installAppBtn');
+
+            window.addEventListener('beforeinstallprompt', (e) => {
+                // Prevent Chrome 67 and earlier from automatically showing the prompt
+                e.preventDefault();
+                // Stash the event so it can be triggered later.
+                deferredPrompt = e;
+                // Update UI to notify the user they can add to home screen
+                installAppSection.style.display = 'block';
+            });
+
+            installAppBtn.addEventListener('click', (e) => {
+                if (deferredPrompt) {
+                    // Show the prompt
+                    deferredPrompt.prompt();
+                    // Wait for the user to respond to the prompt
+                    deferredPrompt.userChoice.then((choiceResult) => {
+                        if (choiceResult.outcome === 'accepted') {
+                            console.log('User accepted the A2HS prompt');
+                        } else {
+                            console.log('User dismissed the A2HS prompt');
+                        }
+                        deferredPrompt = null;
+                        installAppSection.style.display = 'none';
+                    });
+                } else {
+                    // Fallback for browsers that don't support beforeinstallprompt
+                    alert('To install the app: \n- On PC: Click the install icon in the address bar.\n- On Android: Tap "Add to Home Screen" in your browser menu.');
+                }
+            });
+
+            window.addEventListener('appinstalled', (evt) => {
+                console.log('TodoFlow was installed');
+                installAppSection.style.display = 'none';
+            });
+
+            // Link Management Logic
+            function createLinkInput(value = '') {
+                const group = document.createElement('div');
+                group.className = 'links-input-group';
+                group.innerHTML = `
+                    <input type="url" class="form-control todo-link-input" placeholder="https://example.com" value="${value}">
+                    <button type="button" class="remove-link-btn" title="Remove link">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                group.querySelector('.remove-link-btn').onclick = () => group.remove();
+                return group;
+            }
+
+            addLinkBtn.onclick = () => {
+                linksContainer.appendChild(createLinkInput());
+            };
+
+            window.addLinkInput = createLinkInput; // Make it available for editTodo
+
+            console.log('DOMContentLoaded fired');
+            console.log('navLinks count:', navLinks.length);
+
+            // Set current date
+            const today = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            currentDateEl.textContent = today.toLocaleDateString('en-US', options);
+
+            // Set default form values
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+            todoDateInput.min = `${yyyy}-${mm}-${dd}`;
+            todoDateInput.value = `${yyyy}-${mm}-${dd}`;
+
+            const nextHour = today.getHours() + 1;
+            document.getElementById('todoTime').value = `${String(nextHour).padStart(2, '0')}:00`;
+
+            // Set reassign modal date to today
+            reassignDateInput.value = `${yyyy}-${mm}-${dd}`;
+            reassignTimeInput.value = `${String(nextHour).padStart(2, '0')}:00`;
+
+            // Load initial data
+            loadDashboard();
+            loadExistingTodos();
+            loadHistory();
+
+            // Check notification permission
+            function updateNotificationUI() {
+                const notificationText = document.getElementById('notificationText');
+                const notificationBtn = document.getElementById('enableNotifications');
+                const section = document.getElementById('notificationPermissionSection');
+
+                if (!('Notification' in window)) {
+                    section.style.display = 'none';
+                    return;
+                }
+
+                if (Notification.permission === 'granted') {
+                    notificationText.textContent = '✅ Notifications Active';
+                    notificationBtn.style.display = 'none';
+                    section.style.background = '#d1fae5';
+                    section.style.color = '#065f46';
+                } else if (Notification.permission === 'denied') {
+                    notificationText.textContent = '❌ Notifications Blocked';
+                    notificationBtn.textContent = 'How to Unblock';
+                    notificationBtn.onclick = () => alert('Please unblock notifications in your browser site settings to receive reminders.');
+                    section.style.background = '#fee2e2';
+                    section.style.color = '#991b1b';
+                } else {
+                    section.style.display = 'block';
+                }
+            }
+
+            updateNotificationUI();
+
+            // Start reminder checker
+            setInterval(checkReminders, 60000);
+
+            // Load all sections on page load
+            loadDashboard();
+            loadExistingTodos();
+            loadHistory();
+
+            // Navigation Link Click - Show/Hide Sections
+            navLinks.forEach(link => {
+                link.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const tab = this.getAttribute('data-tab');
+
+                    // Update active nav link
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+
+                    // Hide all sections
+                    document.querySelectorAll('.dashboard-section, .addtodo-section, .history-section, .settings-section').forEach(el => {
+                        el.classList.remove('active');
+                    });
+
+                    // Show selected section
+                    if (tab === 'dashboard') {
+                        document.querySelector('.dashboard-section').classList.add('active');
+                        loadDashboard();
+                    } else if (tab === 'add-todo') {
+                        document.querySelector('.addtodo-section').classList.add('active');
+                        loadExistingTodos();
+                    } else if (tab === 'history') {
+                        document.querySelector('.history-section').classList.add('active');
+                        loadHistory();
+                    } else if (tab === 'settings') {
+                        document.querySelector('.settings-section').classList.add('active');
+                    }
+                    
+                    // Close mobile sidebar if open
+                    const sidebar = document.querySelector('.sidebar');
+                    if (sidebar) {
+                        sidebar.classList.remove('mobile-open');
+                    }
+                });
+            });
+
+            // Modal Controls
+            function openModal() {
+                editingTodoId = null;
+                todoForm.reset();
+                modalTitle.textContent = 'Add New Todo';
+                document.getElementById('submitTodoBtn').innerHTML = '<i class="fas fa-save"></i> Save Todo';
+
+                // Reset date/time to now
+                const now = new Date();
+                const yyyy = now.getFullYear();
+                const mm = String(now.getMonth() + 1).padStart(2, '0');
+                const dd = String(now.getDate()).padStart(2, '0');
+                todoDateInput.value = `${yyyy}-${mm}-${dd}`;
+                const nextHour = now.getHours() + 1;
+                document.getElementById('todoTime').value = `${String(nextHour).padStart(2, '0')}:00`;
+                document.getElementById('todoPriority').value = 'medium';
+                document.getElementById('recurringType').value = 'none';
+                document.querySelectorAll('input[name="recurringDays"]').forEach(cb => cb.checked = false);
+
+                // Clear and add one empty link input
+                linksContainer.innerHTML = '';
+                linksContainer.appendChild(window.addLinkInput());
+
+                todoModal.style.display = 'flex';
+            }
+
+            openAddTodoBtn.addEventListener('click', openModal);
+            fabAddTodo.addEventListener('click', openModal);
+
+            const closeActions = [closeTodoModal, closeTodoForm];
+            closeActions.forEach(btn => {
+                if (btn) {
+                    btn.addEventListener('click', () => {
+                        todoModal.style.display = 'none';
+                    });
+                }
+            });
+
+            // Close on outside click
+            window.addEventListener('click', (e) => {
+                if (e.target === todoModal) {
+                    todoModal.style.display = 'none';
+                }
+            });
+        });
+
+        // Form Submission
+        todoForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const todo = {
+                id: Date.now(),
+                title: document.getElementById('todoTitle').value,
+                description: document.getElementById('todoDescription').value,
+                date: document.getElementById('todoDate').value,
+                time: document.getElementById('todoTime').value,
+                priority: document.getElementById('todoPriority').value,
+                recurringType: document.getElementById('recurringType').value,
+                recurringDays: Array.from(document.querySelectorAll('input[name="recurringDays"]:checked')).map(cb => parseInt(cb.value)),
+                recurringEndDate: document.getElementById('recurringEndDate').value || null,
+                links: Array.from(document.querySelectorAll('.todo-link-input')).map(input => input.value.trim()).filter(val => val !== ''),
+                completed: false,
+                completedAt: null,
+                createdAt: new Date().toISOString()
+            };
+
+            // Backwards compatibility for single link
+            todo.actionLink = todo.links.length > 0 ? todo.links[0] : '';
+
+            if (editingTodoId) {
+                // Update existing
+                const index = todos.findIndex(t => t.id === editingTodoId);
+                if (index !== -1) {
+                    todos[index] = {
+                        ...todos[index],
+                        title: todo.title,
+                        description: todo.description,
+                        date: todo.date,
+                        time: todo.time,
+                        priority: todo.priority,
+                        recurringType: todo.recurringType,
+                        recurringDays: todo.recurringDays,
+                        recurringEndDate: todo.recurringEndDate,
+                        links: todo.links,
+                        actionLink: todo.actionLink
+                    };
+                    saveTodos();
+                    editingTodoId = null;
+                    document.getElementById('submitTodoBtn').innerHTML = '<i class="fas fa-save"></i> Save Todo';
+                    showNotification('Todo updated successfully!');
+                }
+            } else {
+                // Save new
+                saveTodo(todo);
+                showNotification('Todo saved successfully!');
+
+                // Note: We don't log to history here because completing is a dashboard action.
+                // If the user happens to create a completed task, we can log it if they really want,
+                // but usually they create tasks to be done.
+                if (todo.completed) {
+                    const historyEntry = {
+                        ...todo,
+                        historyId: Date.now() + Math.random(),
+                        completedAt: new Date().toISOString()
+                    };
+                    completedHistory.push(historyEntry);
+                    saveTodos();
+                    // Reset completed flag in master list if we want it strictly as a template
+                    todo.completed = false;
+                }
+
+                // Reset filters and load list
+                loadDashboard();
+                loadExistingTodos();
+
+                // Close modal
+                todoModal.style.display = 'none';
+            }
+        });
+
+        // Refresh todos
+        loadDashboard();
+        loadExistingTodos();
+
+        // Re-render to ensure latest sort/filter is applied
+        setTimeout(loadExistingTodos, 100);
+
+
+        // Add filter listeners
+        document.getElementById('filterDate').addEventListener('change', () => loadExistingTodos());
+        document.getElementById('todoSort').addEventListener('change', () => loadExistingTodos());
+        document.getElementById('todoSearch').addEventListener('input', () => loadExistingTodos());
+        document.querySelectorAll('.day-filter').forEach(cb => {
+            cb.addEventListener('change', () => loadExistingTodos());
+        });
+
+        // History Filter Listeners
+        document.getElementById('historyFilterDate').addEventListener('change', () => loadHistory());
+        document.getElementById('historyTodoSort').addEventListener('change', () => loadHistory());
+        document.getElementById('historyTodoSearch').addEventListener('input', () => loadHistory());
+        document.querySelectorAll('.history-day-filter').forEach(cb => {
+            cb.addEventListener('change', () => loadHistory());
+        });
+
+        // Recurring Type Change
+        recurringTypeSelect.addEventListener('change', function () {
+            recurringEndContainer.style.display = this.value !== 'none' ? 'block' : 'none';
+            multipleDaysContainer.style.display = this.value === 'multiple' ? 'block' : 'none';
+        });
+
+        // Filter Buttons
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', function () {
+                if (this.closest('.existing-todos-header')) {
+                    filterBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    loadExistingTodos(this.getAttribute('data-filter'));
+                }
+            });
+        });
+
+        // History Filter Buttons
+        historyFilterBtns.forEach(btn => {
+            btn.addEventListener('click', function () {
+                if (this.closest('.history-section')) {
+                    historyFilterBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    loadHistory(this.getAttribute('data-history-filter'));
+                }
+            });
+        });
+
+        // Enable Notifications
+        enableNotificationsBtn.addEventListener('click', function () {
+            if ('Notification' in window) {
+                Notification.requestPermission().then(permission => {
+                    updateNotificationUI();
+                    if (permission === 'granted') {
+                        showNotification('TodoFlow', 'Notifications enabled! You will now receive reminders.');
+                    }
+                });
+            }
+        });
+
+        // Bulk Selection
+        selectAllToday.addEventListener('change', function () {
+            const checkboxes = document.querySelectorAll('#todayTodoList .todo-checkbox');
+            checkboxes.forEach(cb => {
+                cb.checked = this.checked;
+                const todoId = parseInt(cb.closest('.todo-item').dataset.id);
+                if (this.checked) {
+                    if (!selectedTodayIds.includes(todoId)) selectedTodayIds.push(todoId);
+                } else {
+                    selectedTodayIds = selectedTodayIds.filter(id => id !== todoId);
+                }
+            });
+
+            // Update UI
+            document.querySelectorAll('#todayTodoList .todo-item').forEach(item => {
+                item.classList.toggle('selected', this.checked);
+            });
+        });
+
+        selectAllExisting.addEventListener('change', function () {
+            const checkboxes = document.querySelectorAll('#existingTodosList .todo-checkbox');
+            checkboxes.forEach(cb => {
+                cb.checked = this.checked;
+                const todoId = parseInt(cb.closest('.todo-item').dataset.id);
+                if (this.checked) {
+                    if (!selectedExistingIds.includes(todoId)) selectedExistingIds.push(todoId);
+                } else {
+                    selectedExistingIds = selectedExistingIds.filter(id => id !== todoId);
+                }
+            });
+
+            // Update UI
+            document.querySelectorAll('#existingTodosList .todo-item').forEach(item => {
+                item.classList.toggle('selected', this.checked);
+            });
+        });
+
+        selectAllHistory.addEventListener('change', function () {
+            const checkboxes = document.querySelectorAll('#historyList .todo-checkbox');
+            checkboxes.forEach(cb => {
+                cb.checked = this.checked;
+                const historyId = parseFloat(cb.closest('.todo-item').dataset.id);
+                if (this.checked) {
+                    if (!selectedHistoryIds.includes(historyId)) selectedHistoryIds.push(historyId);
+                } else {
+                    selectedHistoryIds = selectedHistoryIds.filter(id => id !== historyId);
+                }
+            });
+
+            // Update UI
+            document.querySelectorAll('#historyList .todo-item').forEach(item => {
+                item.classList.toggle('selected', this.checked);
+            });
+        });
+
+        // Export Functionality
+        function exportToCSV(data, filename) {
+            if (data.length === 0) {
+                showNotification('Export Failed', 'No data to export.');
+                return;
+            }
+
+            // Define fields to export
+            const fields = ['title', 'description', 'date', 'time', 'priority', 'recurringType', 'recurringDays', 'recurringEndDate', 'completed', 'completedAt', 'createdAt', 'actionLink', 'links'];
+            const headers = ['Title', 'Description', 'Date', 'Time', 'Priority', 'Recurring', 'Recurring Days', 'Recurring End Date', 'Status', 'Completed At', 'Created At', 'Link', 'Links'];
+
+            const csvRows = [
+                headers.join(','),
+                ...data.map(row => fields.map(field => {
+                    let value = row[field];
+                    if (value === null || value === undefined) value = '';
+                    if (field === 'completed') value = value ? 'Completed' : 'Pending';
+                    if ((field === 'links' || field === 'recurringDays') && Array.isArray(value)) value = value.join('|');
+                    const escaped = ('' + value).replace(/"/g, '""');
+                    return `"${escaped}"`;
+                }).join(','))
+            ];
+
+            const csvString = csvRows.join('\n');
+            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', filename);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                showNotification('Export Successful', `${filename} has been downloaded.`);
+            }
+        }
+
+        document.getElementById('exportTodos').addEventListener('click', function () {
+            let pendingTodos = todos.filter(t => !t.completed);
+
+            // If some are selected, only export those
+            if (selectedExistingIds.length > 0) {
+                pendingTodos = pendingTodos.filter(t => selectedExistingIds.includes(t.id));
+                showNotification('Exporting Selection', `Exporting ${pendingTodos.length} selected todos.`);
+            } else {
+                showNotification('Exporting All', `Exporting all ${pendingTodos.length} pending todos.`);
+            }
+
+            exportToCSV(pendingTodos, 'my_todos.csv');
+        });
+
+        document.getElementById('exportHistory').addEventListener('click', function () {
+            let completedTodos = todos.filter(t => t.completed);
+
+            // If some are selected, only export those
+            if (selectedHistoryIds.length > 0) {
+                completedTodos = completedTodos.filter(t => selectedHistoryIds.includes(t.id));
+                showNotification('Exporting Selection', `Exporting ${completedTodos.length} selected history items.`);
+            } else {
+                showNotification('Exporting All', `Exporting all ${completedTodos.length} history items.`);
+            }
+
+            exportToCSV(completedTodos, 'todo_history.csv');
+        });
+
+        // Import Functionality
+        const importTodosBtn = document.getElementById('importTodosBtn');
+        const csvImportInput = document.getElementById('csvImportInput');
+
+        importTodosBtn.addEventListener('click', () => {
+            csvImportInput.click();
+        });
+
+        csvImportInput.addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const text = e.target.result;
+                processCSV(text);
+            };
+            reader.readAsText(file);
+        });
+
+        function processCSV(csvText) {
+            const lines = csvText.split('\n');
+            if (lines.length < 2) return;
+
+            const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+            const importedTodos = [];
+
+            for (let i = 1; i < lines.length; i++) {
+                if (!lines[i].trim()) continue;
+
+                // Improved CSV parser that handles quotes and escaped quotes
+                const values = [];
+                let current = '';
+                let inQuotes = false;
+                for (let j = 0; j < lines[i].length; j++) {
+                    const char = lines[i][j];
+                    const nextChar = lines[i][j + 1];
+
+                    if (char === '"') {
+                        if (inQuotes && nextChar === '"') {
+                            current += '"';
+                            j++; // Skip next quote
+                        } else {
+                            inQuotes = !inQuotes;
+                        }
+                    } else if (char === ',' && !inQuotes) {
+                        values.push(current);
+                        current = '';
+                    } else {
+                        current += char;
+                    }
+                }
+                values.push(current);
+
+                const rawRow = {};
+                headers.forEach((header, index) => {
+                    rawRow[header] = values[index] ? values[index].trim() : '';
+                });
+
+                // Map CSV headers back to object keys
+                // Headers: ['Title', 'Description', 'Date', 'Time', 'Priority', 'Recurring', 'Recurring Days', 'Recurring End Date', 'Status', 'Completed At', 'Created At', 'Link', 'Links']
+                const todo = {
+                    id: Date.now() + i,
+                    title: rawRow['Title'] || 'Untitled',
+                    description: rawRow['Description'] || '',
+                    date: rawRow['Date'] || '',
+                    time: rawRow['Time'] || '00:00',
+                    priority: (rawRow['Priority'] || 'medium').toLowerCase(),
+                    recurringType: (rawRow['Recurring'] || 'none').toLowerCase(),
+                    recurringDays: rawRow['Recurring Days'] ? rawRow['Recurring Days'].split('|').map(d => parseInt(d)) : [],
+                    recurringEndDate: rawRow['Recurring End Date'] || null,
+                    completed: rawRow['Status'] === 'Completed',
+                    completedAt: rawRow['Completed At'] || null,
+                    createdAt: rawRow['Created At'] || new Date().toISOString(),
+                    actionLink: rawRow['Link'] || '',
+                    links: rawRow['Links'] ? rawRow['Links'].split('|').filter(l => l.trim() !== '') : []
+                };
+
+                // Normalization: Ensure links array is always synchronized with actionLink for backwards compatibility
+                if (todo.links.length === 0 && todo.actionLink) {
+                    todo.links = [todo.actionLink];
+                } else if (todo.links.length > 0 && !todo.actionLink) {
+                    todo.actionLink = todo.links[0];
+                }
+
+                // Basic validation
+                if (todo.title && todo.date) {
+                    importedTodos.push(todo);
+                }
+            }
+
+            if (importedTodos.length > 0) {
+                // To avoid exact duplicates, you might check against existing titles + dates
+                let addedCount = 0;
+                importedTodos.forEach(newTodo => {
+                    const exists = todos.some(t => t.title === newTodo.title && t.date === newTodo.date);
+                    if (!exists) {
+                        todos.push(newTodo);
+                        addedCount++;
+                    }
+                });
+
+                saveTodos();
+                loadDashboard();
+                loadExistingTodos();
+                loadHistory();
+                showNotification('Import Successful', `Added ${addedCount} new todos from CSV.`);
+
+                // Switch to My Todos section to show the results
+                document.querySelector('[data-tab="add-todo"]').click();
+            } else {
+                showNotification('Import Failed', 'No valid todos found in CSV.');
+            }
+
+            // Reset input
+            csvImportInput.value = '';
+        }
+
+
+
+        // Bulk Actions - Dashboard
+        completeSelectedBtn.addEventListener('click', function () {
+            if (selectedTodayIds.length === 0) {
+                alert('Please select at least one todo to complete.');
+                return;
+            }
+
+            const count = selectedTodayIds.length;
+            const now = new Date();
+            const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+            selectedTodayIds.forEach(id => {
+                const todo = todos.find(t => t.id === id);
+                if (todo) {
+                    // Check if already completed today to prevent double entries
+                    const alreadyDone = completedHistory.some(h =>
+                        h.id === todo.id && h.completedAt && h.completedAt.startsWith(todayStr)
+                    );
+
+                    if (!alreadyDone) {
+                        const historyEntry = {
+                            ...todo,
+                            historyId: Date.now() + Math.random(),
+                            completedAt: now.toISOString()
+                        };
+                        completedHistory.push(historyEntry);
+                    }
+                }
+            });
+
+            saveTodos();
+            selectedTodayIds = [];
+            selectAllToday.checked = false;
+            loadDashboard();
+            loadExistingTodos();
+            loadHistory();
+            showNotification(`${count} todos marked as completed!`);
+        });
+
+        deleteSelectedBtn.addEventListener('click', function () {
+            if (selectedTodayIds.length === 0) {
+                alert('Please select at least one todo to delete.');
+                return;
+            }
+
+            if (confirm(`Are you sure you want to delete ${selectedTodayIds.length} selected todos?`)) {
+                todos = todos.filter(todo => !selectedTodayIds.includes(todo.id));
+                saveTodos();
+                selectedTodayIds = [];
+                selectAllToday.checked = false;
+                loadDashboard();
+                loadExistingTodos();
+                loadHistory();
+            }
+        });
+
+        // Bulk Actions - Existing Todos
+        deleteSelectedExistingBtn.addEventListener('click', function () {
+            if (selectedExistingIds.length === 0) {
+                alert('Please select at least one todo to delete.');
+                return;
+            }
+
+            if (confirm(`Are you sure you want to delete ${selectedExistingIds.length} selected todos?`)) {
+                todos = todos.filter(todo => !selectedExistingIds.includes(todo.id));
+                saveTodos();
+                loadExistingTodos();
+                selectedExistingIds = [];
+                selectAllExisting.checked = false;
+                loadDashboard();
+                loadHistory();
+            }
+        });
+
+        // Bulk Actions - History
+        deleteSelectedHistoryBtn.addEventListener('click', function () {
+            if (selectedHistoryIds.length === 0) {
+                alert('Please select at least one completed todo to delete.');
+                return;
+            }
+
+            if (confirm(`Are you sure you want to delete ${selectedHistoryIds.length} selected history items?`)) {
+                completedHistory = completedHistory.filter(item => !selectedHistoryIds.includes(item.historyId));
+                saveTodos();
+                selectedHistoryIds = [];
+                selectAllHistory.checked = false;
+                loadHistory();
+                loadDashboard();
+                loadExistingTodos();
+            }
+        });
+
+        reassignSelectedBtn.addEventListener('click', function () {
+            if (selectedHistoryIds.length === 0) {
+                alert('Please select at least one completed todo to reassign.');
+                return;
+            }
+
+            // Show modal
+            reassignModal.style.display = 'flex';
+        });
+
+        // Modal Actions
+        closeModalBtn.addEventListener('click', function () {
+            reassignModal.style.display = 'none';
+        });
+
+        cancelReassignBtn.addEventListener('click', function () {
+            reassignModal.style.display = 'none';
+        });
+
+        confirmReassignBtn.addEventListener('click', function () {
+            const newDate = reassignDateInput.value;
+            const newTime = reassignTimeInput.value;
+
+            if (!newDate || !newTime) {
+                alert('Please select both date and time for reassignment.');
+                return;
+            }
+
+            const reassignCount = selectedHistoryIds.length;
+            selectedHistoryIds.forEach(hId => {
+                const historyItem = completedHistory.find(h => h.historyId === hId);
+                if (historyItem) {
+                    // Update the original todo if it exists, or create a new one based on history
+                    let todo = todos.find(t => t.id === historyItem.id);
+                    if (todo) {
+                        todo.date = newDate;
+                        todo.time = newTime;
+                        todo.completed = false;
+                        todo.completedAt = null;
+                    }
+                }
+            });
+
+            saveTodos();
+            reassignModal.style.display = 'none';
+            loadHistory();
+            loadDashboard();
+            loadExistingTodos();
+            const actualCount = selectedHistoryIds.length;
+            selectedHistoryIds = [];
+
+            showNotification(`${reassignCount} todos reassigned to ${newDate} at ${newTime}`);
+        });
+
+        // Helper to parse YYYY-MM-DD to local Date object
+        function parseLocalDate(dateStr) {
+            if (!dateStr) return null;
+            const [y, m, d] = dateStr.split('-').map(Number);
+            return new Date(y, m - 1, d);
+        }
+
+        // Functions
+        function updateRecurringStatus() {
+            // We no longer need to reset todo.completed because we don't set it in the master list.
+            // Completions are tracked in History.
+            return;
+        }
+
+        function loadDashboard() {
+            updateRecurringStatus();
+            const now = new Date();
+            const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+            // Get strictly today's/recurring today's todos
+            const todayTodosCore = getTodosForDate(todayStr);
+
+            // Get Uncomplete Passed One-time Todos (Overdue)
+            const overdueTodos = todos.filter(todo => {
+                // Check history to see if it was ever completed
+                const wasCompleted = completedHistory.some(h => h.id === todo.id);
+                if (wasCompleted) return false;
+                if (isRecurring(todo)) return false;
+                return todo.date < todayStr;
+            });
+
+            // Combine them
+            const combinedTodos = [...overdueTodos, ...todayTodosCore];
+
+            updateStats(combinedTodos, todayStr);
+            renderTodayTodos(combinedTodos, todayStr);
+
+            // Hide the redundant overdue section
+            const overdueListSection = document.getElementById('overdueTodoList')?.closest('.todo-list');
+            if (overdueListSection) {
+                overdueListSection.style.display = 'none';
+            }
+        }
+
+        function loadExistingTodos(filterType = null) {
+            updateRecurringStatus();
+            // Apply tab filter if clicked
+            if (filterType) {
+                document.querySelectorAll('.filter-toolbar .filter-btn').forEach(btn => {
+                    const matches = btn.getAttribute('data-filter') === filterType;
+                    btn.classList.toggle('active', matches);
+                });
+            }
+
+            const activeFilter = document.querySelector('.filter-toolbar .filter-btn.active')?.getAttribute('data-filter') || 'all';
+            const filterDate = document.getElementById('filterDate').value;
+            const sortBy = document.getElementById('todoSort').value;
+            const searchTerm = document.getElementById('todoSearch').value.toLowerCase();
+            const selectedDays = Array.from(document.querySelectorAll('.day-filter:checked')).map(cb => parseInt(cb.value));
+
+            const now = new Date();
+            const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+            const todayObj = parseLocalDate(todayStr);
+
+            let filteredTodos = todos.filter(todo => {
+                // 1. Search Match
+                if (searchTerm) {
+                    const inTitle = todo.title.toLowerCase().includes(searchTerm);
+                    const inDesc = todo.description && todo.description.toLowerCase().includes(searchTerm);
+                    if (!inTitle && !inDesc) return false;
+                }
+
+                // 2. Time Range (Today/Week/Month/Year)
+                if (activeFilter !== 'all') {
+                    const todoDate = parseLocalDate(todo.date);
+                    if (activeFilter === 'today') {
+                        if (!(todo.date === todayStr || isRecurringForDate(todo, todayStr) || (!todo.completed && todo.date < todayStr && todo.recurringType === 'none'))) return false;
+                    } else if (activeFilter === 'week') {
+                        const endOfWeek = new Date(todayObj);
+                        endOfWeek.setDate(todayObj.getDate() + 7);
+                        if (!((todoDate >= todayObj && todoDate <= endOfWeek) || isRecurringForDate(todo, todayStr))) return false;
+                    } else if (activeFilter === 'month') {
+                        const endOfMonth = new Date(todayObj);
+                        endOfMonth.setMonth(todayObj.getMonth() + 1);
+                        if (!((todoDate >= todayObj && todoDate <= endOfMonth) || isRecurringForDate(todo, todayStr))) return false;
+                    } else if (activeFilter === 'year') {
+                        const endOfYear = new Date(todayObj);
+                        endOfYear.setFullYear(todayObj.getFullYear() + 1);
+                        if (!((todoDate >= todayObj && todoDate <= endOfYear) || isRecurringForDate(todo, todayStr))) return false;
+                    }
+                }
+
+                // 3. Selection Date Match
+                if (filterDate) {
+                    if (!(todo.date === filterDate || isRecurringForDate(todo, filterDate))) return false;
+                }
+
+                // 4. Day of Week Match
+                if (selectedDays.length > 0) {
+                    const todoDateObj = parseLocalDate(todo.date);
+                    const todoDay = todoDateObj ? todoDateObj.getDay() : -1;
+
+                    if (todo.recurringType === 'none') {
+                        if (!selectedDays.includes(todoDay)) return false;
+                    } else {
+                        let occursOnSelectedDay = false;
+                        if (todo.recurringType === 'daily') occursOnSelectedDay = true;
+                        else if (todo.recurringType === 'weekdays') occursOnSelectedDay = selectedDays.some(d => d >= 1 && d <= 5);
+                        else if (todo.recurringType === 'weekly' || todo.recurringType === 'monthly') occursOnSelectedDay = selectedDays.includes(todoDay);
+                        else if (todo.recurringType === 'multiple') occursOnSelectedDay = todo.recurringDays && todo.recurringDays.some(d => selectedDays.includes(d));
+
+                        if (!occursOnSelectedDay) return false;
+                    }
+                }
+
+                return true;
+            });
+
+            // Sorting
+            filteredTodos.sort((a, b) => {
+                const dateTimeA = new Date(`${a.date}T${a.time}`).getTime();
+                const dateTimeB = new Date(`${b.date}T${b.time}`).getTime();
+                return sortBy === 'newest' ? dateTimeB - dateTimeA : dateTimeA - dateTimeB;
+            });
+
+            renderExistingTodos(filteredTodos);
+        }
+
+        function loadHistory(filterType = null) {
+            updateRecurringStatus();
+            // Apply tab filter if clicked
+            if (filterType) {
+                document.querySelectorAll('.history-section .filter-btn').forEach(btn => {
+                    const matches = btn.getAttribute('data-history-filter') === filterType;
+                    btn.classList.toggle('active', matches);
+                });
+            }
+
+            const activeFilter = document.querySelector('.history-section .filter-btn.active')?.getAttribute('data-history-filter') || 'all';
+            const filterDate = document.getElementById('historyFilterDate').value;
+            const sortBy = document.getElementById('historyTodoSort').value;
+            const searchTerm = document.getElementById('historyTodoSearch').value.toLowerCase();
+            const selectedDays = Array.from(document.querySelectorAll('.history-day-filter:checked')).map(cb => parseInt(cb.value));
+
+            const now = new Date();
+            const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+            const todayObj = parseLocalDate(todayStr);
+
+            let filteredTodos = completedHistory.filter(todo => {
+                // 1. Search Match
+                if (searchTerm) {
+                    const inTitle = todo.title.toLowerCase().includes(searchTerm);
+                    const inDesc = todo.description && todo.description.toLowerCase().includes(searchTerm);
+                    if (!inTitle && !inDesc) return false;
+                }
+
+                // 2. Time Range (Today/Week/Month/Year) - Based on Completion Date
+                if (activeFilter !== 'all') {
+                    const completedDate = new Date(todo.completedAt);
+                    const completedDateStr = `${completedDate.getFullYear()}-${String(completedDate.getMonth() + 1).padStart(2, '0')}-${String(completedDate.getDate()).padStart(2, '0')}`;
+                    const completedDateObj = parseLocalDate(completedDateStr);
+
+                    if (activeFilter === 'today') {
+                        if (completedDateStr !== todayStr) return false;
+                    } else if (activeFilter === 'week') {
+                        const weekAgo = new Date(todayObj);
+                        weekAgo.setDate(todayObj.getDate() - 7);
+                        if (completedDateObj < weekAgo) return false;
+                    } else if (activeFilter === 'month') {
+                        const monthAgo = new Date(todayObj);
+                        monthAgo.setMonth(todayObj.getMonth() - 1);
+                        if (completedDateObj < monthAgo) return false;
+                    } else if (activeFilter === 'year') {
+                        const yearAgo = new Date(todayObj);
+                        yearAgo.setFullYear(todayObj.getFullYear() - 1);
+                        if (completedDateObj < yearAgo) return false;
+                    }
+                }
+
+                // 3. Selection Date Match (Scheduled Date)
+                if (filterDate) {
+                    if (!(todo.date === filterDate || isRecurringForDate(todo, filterDate))) return false;
+                }
+
+                // 4. Day of Week Match (Scheduled Day)
+                if (selectedDays.length > 0) {
+                    const todoDateObj = parseLocalDate(todo.date);
+                    const todoDay = todoDateObj ? todoDateObj.getDay() : -1;
+
+                    if (todo.recurringType === 'none') {
+                        if (!selectedDays.includes(todoDay)) return false;
+                    } else {
+                        let occursOnSelectedDay = false;
+                        if (todo.recurringType === 'daily') occursOnSelectedDay = true;
+                        else if (todo.recurringType === 'weekdays') occursOnSelectedDay = selectedDays.some(d => d >= 1 && d <= 5);
+                        else if (todo.recurringType === 'weekly' || todo.recurringType === 'monthly') occursOnSelectedDay = selectedDays.includes(todoDay);
+                        else if (todo.recurringType === 'multiple') occursOnSelectedDay = todo.recurringDays && todo.recurringDays.some(d => selectedDays.includes(d));
+
+                        if (!occursOnSelectedDay) return false;
+                    }
+                }
+
+                return true;
+            });
+
+            // Sorting
+            filteredTodos.sort((a, b) => {
+                const dateA = new Date(a.completedAt).getTime();
+                const dateB = new Date(b.completedAt).getTime();
+                return sortBy === 'newest' ? dateB - dateA : dateA - dateB;
+            });
+
+            renderHistory(filteredTodos);
+        }
+
+        function renderTodayTodos(todosForDashboard, dateStr) {
+            if (todosForDashboard.length === 0) {
+                todayTodoList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-clipboard-check"></i>
+                        <h3>No todos for today</h3>
+                        <p>Enjoy your day or add some todos!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            todosForDashboard.forEach(todo => {
+                // Check if this specific todo is marked as done in history for the targeted date
+                const isCompletedToday = completedHistory.some(h =>
+                    h.id === todo.id && h.completedAt && h.completedAt.startsWith(dateStr)
+                );
+
+                const isSelected = selectedTodayIds.includes(todo.id);
+                const isOverdue = !isCompletedToday && todo.date < dateStr && todo.recurringType === 'none';
+
+                html += `
+                <div class="todo-item ${isCompletedToday ? 'completed' : ''} ${isSelected ? 'selected' : ''}" 
+                     style="${isOverdue ? 'border-left: 4px solid var(--danger); background-color: #fffafb;' : ''}" data-id="${todo.id}">
+                    <input type="checkbox" class="checkbox todo-checkbox" ${isSelected ? 'checked' : ''}>
+                    <div class="todo-content">
+                        <div class="todo-title">${todo.title}</div>
+                        <div class="todo-meta">
+                            <span class="todo-time">
+                                <i class="far fa-clock"></i>
+                                ${isOverdue ? `<span style="color: var(--danger); font-weight: 700;">Overdue (${todo.date})</span>` : formatTime(todo.time)}
+                            </span>
+                            <span class="priority priority-${todo.priority}">
+                                ${todo.priority.charAt(0).toUpperCase() + todo.priority.slice(1)}
+                            </span>
+                            ${todo.recurringType !== 'none' ? `
+                            <span class="recurring-badge" onclick="showRecurringInfo(${todo.id})">
+                                <i class="fas fa-redo"></i>
+                                ${todo.recurringType === 'multiple' ? 'Custom' : todo.recurringType}
+                            </span>
+                            ` : ''}
+                        </div>
+                        ${todo.description ? `<p style="margin-top: 8px; color: var(--gray);">${linkify(todo.description)}</p>` : ''}
+                    </div>
+                    <div class="todo-item-actions" style="display: flex; gap: 8px; align-items: center;">
+                        <button class="action-btn btn-outline" onclick="editTodo(${todo.id})" style="padding: 10px; width: 40px; justify-content: center;" title="Edit">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        ${renderTodoActionButtons(todo, 'today')}
+                        <button class="action-btn ${isCompletedToday ? 'btn-outline' : 'btn-primary'}" onclick="toggleTodo(${todo.id})" style="padding: 8px 16px; width: 110px; justify-content: center; font-size: 14px;">
+                            <i class="fas fa-${isCompletedToday ? 'undo' : 'check'}"></i>
+                            ${isCompletedToday ? 'Undo' : 'Done'}
+                        </button>
+                        <button class="action-btn btn-danger" onclick="deleteTodo(${todo.id})" style="padding: 10px; width: 40px; justify-content: center;" title="Delete">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </div>
+                `;
+            });
+
+            todayTodoList.innerHTML = html;
+
+            // Add checkbox event listeners
+            document.querySelectorAll('#todayTodoList .todo-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', function () {
+                    const todoId = parseInt(this.closest('.todo-item').dataset.id);
+                    const isSelected = this.checked;
+
+                    if (isSelected) {
+                        if (!selectedTodayIds.includes(todoId)) selectedTodayIds.push(todoId);
+                    } else {
+                        selectedTodayIds = selectedTodayIds.filter(id => id !== todoId);
+                        selectAllToday.checked = false;
+                    }
+
+                    this.closest('.todo-item').classList.toggle('selected', isSelected);
+                });
+            });
+        }
+
+        function renderOverdueTodos(overdueTodos) {
+            const overdueContainer = document.getElementById('overdueTodoList');
+            if (!overdueContainer) return;
+
+            if (overdueTodos.length === 0) {
+                overdueContainer.innerHTML = `
+                    <div class="empty-state" style="padding: 20px; background: #f8fafc; border-radius: 8px; text-align: center;">
+                        <p style="color: var(--gray); font-size: 14px;">No passed todos. You're all caught up!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            overdueTodos.forEach(todo => {
+                const date = new Date(todo.date).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric'
+                });
+
+                html += `
+                <div class="todo-item" style="border-left: 4px solid #ef4444; background: #fff5f5; margin-bottom: 12px;" data-id="${todo.id}">
+                    <div class="todo-content">
+                        <div class="todo-title" style="color: #991b1b; font-weight: 700;">${todo.title}</div>
+                        <div class="todo-meta">
+                            <span style="color: #b91c1c; font-weight: 600;">
+                                <i class="far fa-calendar-times"></i>
+                                Overdue: ${date} at ${formatTime(todo.time)}
+                            </span>
+                            <span class="priority priority-${todo.priority}">
+                                ${todo.priority.charAt(0).toUpperCase() + todo.priority.slice(1)}
+                            </span>
+                        </div>
+                        ${todo.description ? `<p style="margin-top: 8px; color: #7f1d1d; font-size: 13px;">${linkify(todo.description)}</p>` : ''}
+                    </div>
+                    <div class="todo-item-actions" style="display: flex; gap: 8px; align-items: center;">
+                        <button class="action-btn btn-outline" onclick="editTodo(${todo.id})" style="padding: 10px; width: 40px; justify-content: center;" title="Edit">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        ${renderTodoActionButtons(todo, 'overdue')}
+                        <button class="action-btn btn-primary" onclick="toggleTodo(${todo.id})" style="padding: 8px 16px; width: 110px; justify-content: center; font-size: 14px;">
+                            <i class="fas fa-check"></i> Done
+                        </button>
+                        <button class="action-btn btn-primary" onclick="passTodo(${todo.id})" style="padding: 8px 16px; width: 100px; justify-content: center; font-size: 14px;">
+                            <i class="fas fa-history"></i> Pass
+                        </button>
+                        <button class="action-btn btn-danger" onclick="deleteTodo(${todo.id})" style="padding: 10px; width: 40px; justify-content: center;" title="Delete">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </div>
+                `;
+            });
+
+            overdueContainer.innerHTML = html;
+        }
+
+        function renderExistingTodos(todos) {
+            if (todos.length === 0) {
+                existingTodosList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-clipboard-list"></i>
+                        <h3>No todos found</h3>
+                        <p>Add some todos using the form above!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            todos.forEach(todo => {
+                const isSelected = selectedExistingIds.includes(todo.id);
+                const date = new Date(todo.date).toLocaleDateString('en-US', {
+                    weekday: 'short',
+                    month: 'short',
+                    day: 'numeric'
+                });
+
+                html += `
+                <div class="todo-item ${isSelected ? 'selected' : ''}" data-id="${todo.id}">
+                    <input type="checkbox" class="checkbox todo-checkbox" ${isSelected ? 'checked' : ''}>
+                    <div class="todo-content">
+                        <div class="todo-title">${todo.title}</div>
+                        <div class="todo-meta">
+                            <span class="todo-time">
+                                <i class="far fa-calendar"></i>
+                                ${date} at ${formatTime(todo.time)}
+                            </span>
+                            <span class="priority priority-${todo.priority}">
+                                ${todo.priority.charAt(0).toUpperCase() + todo.priority.slice(1)}
+                            </span>
+                            ${todo.recurringType !== 'none' ? `
+                            <span class="recurring-badge" onclick="showRecurringInfo(${todo.id})">
+                                <i class="fas fa-redo"></i>
+                                ${todo.recurringType === 'multiple' ? 'Custom' : todo.recurringType}
+                            </span>
+                            ` : ''}
+                        </div>
+                        ${todo.description ? `<p style="margin-top: 8px; color: var(--gray);">${linkify(todo.description)}</p>` : ''}
+                    </div>
+                    <div class="todo-item-actions" style="display: flex; gap: 8px; align-items: center;">
+                        <button class="action-btn btn-outline" onclick="editTodo(${todo.id})" style="padding: 10px; width: 40px; justify-content: center;" title="Edit">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        ${renderTodoActionButtons(todo, 'existing')}
+                        <button class="action-btn btn-danger" onclick="deleteTodo(${todo.id})" style="padding: 10px; width: 40px; justify-content: center;" title="Delete">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </div>
+                `;
+            });
+
+            existingTodosList.innerHTML = html;
+
+            // Add checkbox event listeners
+            document.querySelectorAll('#existingTodosList .todo-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', function () {
+                    const todoId = parseInt(this.closest('.todo-item').dataset.id);
+                    const isSelected = this.checked;
+
+                    if (isSelected) {
+                        if (!selectedExistingIds.includes(todoId)) selectedExistingIds.push(todoId);
+                    } else {
+                        selectedExistingIds = selectedExistingIds.filter(id => id !== todoId);
+                        selectAllExisting.checked = false;
+                    }
+
+                    this.closest('.todo-item').classList.toggle('selected', isSelected);
+                });
+            });
+        }
+
+        function renderHistory(todos) {
+            if (todos.length === 0) {
+                historyList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-history"></i>
+                        <h3>No completed todos yet</h3>
+                        <p>Complete some todos to see them here!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            todos.forEach(todo => {
+                const isSelected = selectedHistoryIds.includes(todo.historyId);
+                const date = new Date(todo.date).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                });
+                const completedDate = new Date(todo.completedAt).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric'
+                });
+
+                html += `
+                <div class="todo-item completed ${isSelected ? 'selected' : ''}" data-id="${todo.historyId}">
+                    <input type="checkbox" class="checkbox todo-checkbox" ${isSelected ? 'checked' : ''}>
+                    <div class="todo-content">
+                        <div class="todo-title">${todo.title}</div>
+                        <div class="todo-meta">
+                            <span class="todo-time">
+                                <i class="far fa-calendar"></i>
+                                Scheduled: ${date} at ${formatTime(todo.time)}
+                            </span>
+                            <span style="color: var(--secondary);">
+                                <i class="fas fa-check-circle"></i>
+                                Completed: ${completedDate}
+                            </span>
+                            <span class="priority priority-${todo.priority}">
+                                ${todo.priority.charAt(0).toUpperCase() + todo.priority.slice(1)}
+                            </span>
+                        </div>
+                        ${todo.description ? `<p style="margin-top: 8px; color: var(--gray);">${linkify(todo.description)}</p>` : ''}
+                    </div>
+                    <div class="todo-item-actions" style="display: flex; gap: 8px; align-items: center;">
+                        ${renderTodoActionButtons(todo, 'history')}
+                        <button class="action-btn btn-danger" onclick="deleteHistoryItem(${todo.historyId})" style="padding: 10px; width: 40px; justify-content: center;" title="Delete">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </div>
+                `;
+            });
+
+            historyList.innerHTML = html;
+
+            // Add checkbox event listeners
+            document.querySelectorAll('#historyList .todo-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', function () {
+                    const historyId = parseFloat(this.closest('.todo-item').dataset.id);
+                    const isSelected = this.checked;
+
+                    if (isSelected) {
+                        if (!selectedHistoryIds.includes(historyId)) selectedHistoryIds.push(historyId);
+                    } else {
+                        selectedHistoryIds = selectedHistoryIds.filter(id => id !== historyId);
+                        selectAllHistory.checked = false;
+                    }
+
+                    this.closest('.todo-item').classList.toggle('selected', isSelected);
+                });
+            });
+        }
+
+        function updateStats(dashboardTodos, dateStr) {
+            const total = dashboardTodos.length;
+            const completed = dashboardTodos.filter(todo =>
+                completedHistory.some(h => h.id === todo.id && h.completedAt && h.completedAt.startsWith(dateStr))
+            ).length;
+            const pending = total - completed;
+
+            todayTotalEl.textContent = total;
+            todayCompletedEl.textContent = completed;
+            todayPendingEl.textContent = pending;
+
+            // Update Header Stats Visuals
+            const pct = total === 0 ? 0 : Math.round((completed / total) * 100);
+            document.getElementById('headerProgressPct').textContent = `${pct}%`;
+            document.getElementById('headerProgressBar').style.width = `${pct}%`;
+            document.getElementById('headerDoneCount').textContent = completed;
+            document.getElementById('headerPendingCount').textContent = pending;
+        }
+
+        function getTodosForDate(date) {
+            return todos.filter(todo => {
+                if (todo.date === date) return true;
+                if (todo.recurringType !== 'none') {
+                    return isRecurringForDate(todo, date);
+                }
+                return false;
+            });
+        }
+
+        function isRecurringForToday(todo) {
+            const now = new Date();
+            const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+            return isRecurringForDate(todo, today);
+        }
+
+        function isRecurringForDate(todo, date) {
+            if (todo.recurringType === 'none') return false;
+
+            const todoDate = parseLocalDate(todo.date);
+            const checkDate = parseLocalDate(date);
+
+            if (!todoDate || !checkDate) return false;
+
+            // Check if recurring end date hasn't passed
+            if (todo.recurringEndDate) {
+                const endDate = parseLocalDate(todo.recurringEndDate);
+                if (endDate && endDate < checkDate) return false;
+            }
+
+            // Check based on recurring type
+            switch (todo.recurringType) {
+                case 'daily':
+                    return checkDate >= todoDate;
+                case 'weekly':
+                    return checkDate >= todoDate && checkDate.getDay() === todoDate.getDay();
+                case 'monthly':
+                    return checkDate >= todoDate && checkDate.getDate() === todoDate.getDate();
+                case 'weekdays':
+                    const day = checkDate.getDay();
+                    return checkDate >= todoDate && day >= 1 && day <= 5;
+                case 'multiple':
+                    return checkDate >= todoDate && todo.recurringDays && todo.recurringDays.includes(checkDate.getDay());
+                default:
+                    return false;
+            }
+        }
+
+        function isRecurring(todo) {
+            return todo.recurringType !== 'none';
+        }
+
+        function saveTodo(todo) {
+            todos.push(todo);
+            saveTodos();
+        }
+
+        function saveTodos() {
+            localStorage.setItem('todos', JSON.stringify(todos));
+            localStorage.setItem('completedHistory', JSON.stringify(completedHistory));
+        }
+
+        // Global functions for inline event handlers
+        window.toggleTodo = function (id) {
+            const todo = todos.find(t => t.id === id);
+            if (!todo) return;
+
+            const now = new Date();
+            const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+            // Check if already done today
+            const historyIndex = completedHistory.findIndex(h =>
+                h.id === todo.id && h.completedAt && h.completedAt.startsWith(todayStr)
+            );
+
+            if (historyIndex === -1) {
+                // Mark as done: Add to history
+                const historyEntry = {
+                    ...todo,
+                    historyId: Date.now() + Math.random(),
+                    completedAt: now.toISOString()
+                };
+                completedHistory.push(historyEntry);
+                showNotification('Todo completed!', `Great job! You completed: ${todo.title}`);
+            } else {
+                // Undo: Remove from history
+                completedHistory.splice(historyIndex, 1);
+            }
+
+            saveTodos();
+            loadDashboard();
+            loadExistingTodos();
+            loadHistory();
+        };
+
+        window.deleteHistoryItem = function (historyId) {
+            if (confirm('Are you sure you want to delete this history item?')) {
+                completedHistory = completedHistory.filter(h => h.historyId !== historyId);
+                saveTodos();
+                loadHistory();
+            }
+        };
+
+        window.passTodo = function (id) {
+            const todo = todos.find(t => t.id === id);
+            if (todo) {
+                const now = new Date();
+                const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+                todo.date = today;
+                saveTodos();
+                loadDashboard();
+                loadExistingTodos();
+                showNotification('Todo Passed', `Moved "${todo.title}" to today.`);
+            }
+        };
+
+        window.deleteTodo = function (id) {
+            if (confirm('Are you sure you want to delete this todo?')) {
+                todos = todos.filter(todo => todo.id !== id);
+                saveTodos();
+                loadDashboard();
+                loadExistingTodos();
+            }
+        };
+
+        window.showRecurringInfo = function (id) {
+            const todo = todos.find(t => t.id === id);
+            if (todo) {
+                showNotification('Recurring Schedule', getRecurringDaysText(todo));
+            }
+        };
+
+        window.editTodo = function (id) {
+            const todoId = Number(id);
+            const todo = todos.find(t => t.id === todoId);
+            if (!todo) return;
+
+            editingTodoId = todoId;
+            modalTitle.textContent = 'Edit Todo';
+            todoModal.style.display = 'flex';
+
+            // Populate form
+            document.getElementById('todoTitle').value = todo.title;
+            document.getElementById('todoDescription').value = todo.description || '';
+            document.getElementById('todoDate').value = todo.date;
+            document.getElementById('todoTime').value = todo.time;
+            document.getElementById('todoPriority').value = todo.priority;
+            document.getElementById('recurringType').value = todo.recurringType;
+
+            // Populate Links
+            linksContainer.innerHTML = '';
+            const links = todo.links || (todo.actionLink ? [todo.actionLink] : []);
+            if (links.length > 0) {
+                links.forEach(link => {
+                    linksContainer.appendChild(window.addLinkInput(link));
+                });
+            } else {
+                linksContainer.appendChild(window.addLinkInput());
+            }
+
+            if (todo.recurringType !== 'none') {
+                document.getElementById('recurringEndContainer').style.display = 'block';
+                document.getElementById('recurringEndDate').value = todo.recurringEndDate || '';
+
+                if (todo.recurringType === 'multiple') {
+                    multipleDaysContainer.style.display = 'block';
+                    const days = todo.recurringDays || [];
+                    document.querySelectorAll('input[name="recurringDays"]').forEach(cb => {
+                        cb.checked = days.includes(parseInt(cb.value));
+                    });
+                } else {
+                    multipleDaysContainer.style.display = 'none';
+                }
+            } else {
+                document.getElementById('recurringEndContainer').style.display = 'none';
+                multipleDaysContainer.style.display = 'none';
+            }
+
+            // Update UI
+            document.getElementById('submitTodoBtn').innerHTML = '<i class="fas fa-edit"></i> Update Todo';
+        };
+
+        function checkReminders() {
+            const now = new Date();
+            const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+            todos.forEach(todo => {
+                if (!todo.completed && todo.time === currentTime) {
+                    if (todo.date === today || isRecurringForToday(todo)) {
+                        showNotification('Todo Reminder', `It's time for: ${todo.title}`, true);
+                    }
+                }
+            });
+        }
+
+        function showNotification(title, message, isReminder = false) {
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification(title, {
+                    body: message,
+                    icon: 'https://cdn-icons-png.flaticon.com/512/3208/3208720.png'
+                });
+            }
+
+            // Also show in-page notification
+            if (!isReminder || document.visibilityState === 'visible') {
+                const notification = document.createElement('div');
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: var(--primary);
+                    color: white;
+                    padding: 16px 24px;
+                    border-radius: var(--border-radius);
+                    box-shadow: var(--shadow-lg);
+                    z-index: 1000;
+                    animation: slideIn 0.3s ease;
+                `;
+                notification.innerHTML = `
+                    <strong>${title}</strong>
+                    <p style="margin-top: 4px;">${message}</p>
+                `;
+                document.body.appendChild(notification);
+
+                setTimeout(() => {
+                    notification.style.animation = 'slideOut 0.3s ease';
+                    setTimeout(() => notification.remove(), 300);
+                }, 3000);
+
+                // Add CSS for animations
+                if (!document.getElementById('notification-styles')) {
+                    const style = document.createElement('style');
+                    style.id = 'notification-styles';
+                    style.textContent = `
+                        @keyframes slideIn {
+                            from { transform: translateX(100%); opacity: 0; }
+                            to { transform: translateX(0); opacity: 1; }
+                        }
+                        @keyframes slideOut {
+                            from { transform: translateX(0); opacity: 1; }
+                            to { transform: translateX(100%); opacity: 0; }
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+            }
+        }
+
+        function renderTodoActionButtons(todo, section = 'default') {
+            let links = [];
+
+            // Collect links from all possible sources
+            if (todo.links && Array.isArray(todo.links)) {
+                links = todo.links.filter(l => l && typeof l === 'string' && l.trim() !== '');
+            } else if (todo.links && typeof todo.links === 'string') {
+                links = todo.links.split('|').filter(l => l && l.trim() !== '');
+            }
+
+            // Fallback to legacy actionLink if links is empty
+            if (links.length === 0 && todo.actionLink && typeof todo.actionLink === 'string' && todo.actionLink.trim() !== '') {
+                links = [todo.actionLink.trim()];
+            }
+
+            if (links.length === 0) return '';
+
+            if (links.length === 1) {
+                return `
+                <a href="${links[0]}" target="_blank" class="action-btn btn-success" style="padding: 8px 16px; text-decoration: none; width: 100px; justify-content: center; font-size: 14px;" title="Take Action">
+                    <i class="fas fa-external-link-alt"></i> Action
+                </a>`;
+            }
+
+            const dropdownId = `dropdown-${section}-${todo.id}`;
+            return `
+            <div class="link-dropdown">
+                <button class="action-btn btn-success dropdown-trigger" onclick="toggleLinkDropdown(event, '${dropdownId}')" style="padding: 8px 16px; width: 100px; justify-content: center; font-size: 14px;">
+                    <i class="fas fa-link"></i> Links <i class="fas fa-chevron-down" style="font-size: 10px; margin-left: 4px;"></i>
+                </button>
+                <div class="link-dropdown-content" id="${dropdownId}">
+                    ${links.map((link, idx) => `
+                        <a href="${link}" target="_blank" class="link-dropdown-item">
+                            <i class="fas fa-external-link-alt"></i> Link ${idx + 1}
+                        </a>
+                    `).join('')}
+                </div>
+            </div>`;
+        }
+
+        window.toggleLinkDropdown = function (event, dropdownId) {
+            event.stopPropagation();
+            const dropdown = document.getElementById(dropdownId);
+            if (!dropdown) return;
+            const isShown = dropdown.classList.contains('show');
+
+            // Close all other dropdowns
+            document.querySelectorAll('.link-dropdown-content').forEach(d => d.classList.remove('show'));
+
+            if (!isShown) {
+                dropdown.classList.add('show');
+            }
+        };
+
+        // Close dropdowns on outside click
+        window.addEventListener('click', () => {
+            document.querySelectorAll('.link-dropdown-content').forEach(d => d.classList.remove('show'));
+        });
+
+        function linkify(text) {
+            if (!text) return '';
+            return text.replace(/(https?:\/\/[\S]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;">$1</a>');
+        }
+
+        function formatTime(timeString) {
+            const [hours, minutes] = timeString.split(':');
+            const hour = parseInt(hours);
+            const ampm = hour >= 12 ? 'PM' : 'AM';
+            const formattedHour = hour % 12 || 12;
+            return `${formattedHour}:${minutes} ${ampm}`;
+        }
+
+        function getRecurringDaysText(todo) {
+            if (todo.recurringType === 'none') return '';
+
+            const daysMap = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+            switch (todo.recurringType) {
+                case 'daily':
+                    return 'Every day';
+                case 'weekdays':
+                    return 'Mon-Fri';
+                case 'weekly':
+                    const date = parseLocalDate(todo.date);
+                    return `Weekly on ${daysMap[date.getDay()]}`;
+                case 'monthly':
+                    const mDate = parseLocalDate(todo.date);
+                    return `Monthly on day ${mDate.getDate()}`;
+                case 'multiple':
+                    return `On ${todo.recurringDays.map(d => daysMap[d]).join(', ')}`;
+                default:
+                    return '';
+            }
+        }
+    </script>
+</body>
+
+</html>
